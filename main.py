@@ -1,0 +1,80 @@
+import json
+import logging
+import sys
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(message)s")
+logger = logging.getLogger("gcs_metadata_processor")
+
+
+def log_structured(severity: str, message: str, **kwargs) -> Dict[str, Any]:
+    payload = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "severity": severity.upper(),
+        "message": message,
+        "service": "gcs-metadata-extractor",
+        **kwargs,
+    }
+    logger.info(json.dumps(payload))
+    return payload
+
+
+def extract_metadata(data: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(data, dict):
+        raise ValueError(f"Payload inválido: {type(data).__name__}")
+
+    bucket_name = data.get("bucket")
+    file_name = data.get("name")
+
+    if not bucket_name or not file_name:
+        raise ValueError("Metadatos incompletos: 'bucket' y 'name' requeridos.")
+
+    try:
+        raw_size = data.get("size", 0)
+        size_bytes = int(raw_size) if raw_size is not None else 0
+    except (ValueError, TypeError):
+        size_bytes = 0
+
+    return {
+        "bucket": bucket_name,
+        "name": file_name,
+        "size_bytes": size_bytes,
+        "size_kb": round(size_bytes / 1024, 2),
+        "size_mb": round(size_bytes / (1024 * 1024), 4),
+        "content_type": data.get("contentType") or "application/octet-stream",
+        "storage_class": data.get("storageClass", "STANDARD"),
+        "time_created": data.get("timeCreated")
+        or datetime.utcnow().isoformat() + "Z",
+        "updated": data.get("updated") or datetime.utcnow().isoformat() + "Z",
+        "metageneration": data.get("metageneration", "1"),
+        "md5_hash": data.get("md5Hash", "N/A"),
+    }
+
+
+def process_gcs_file(
+    event: Any, context: Optional[Any] = None
+) -> Dict[str, Any]:
+    log_structured("INFO", "Procesando evento de Cloud Storage")
+
+    event_data = event.data if hasattr(event, "data") else event
+    if not isinstance(event_data, dict):
+        err_msg = f"Tipo de evento no soportado: {type(event).__name__}"
+        log_structured("ERROR", err_msg)
+        return {"status": "error", "error": err_msg}
+
+    try:
+        metadata = extract_metadata(event_data)
+        log_structured(
+            "INFO",
+            f"Archivo procesado: gs://{metadata['bucket']}/{metadata['name']}",
+            metadata=metadata,
+        )
+        return {
+            "status": "success",
+            "message": "Metadatos registrados",
+            "metadata": metadata,
+        }
+    except Exception as exc:
+        log_structured("ERROR", str(exc))
+        return {"status": "error", "error": str(exc)}
