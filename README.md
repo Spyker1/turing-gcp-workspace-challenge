@@ -3,12 +3,18 @@
 
 **Candidato:** Julián Alejandro Rodríguez López  
 **Fecha:** 28 de Septiembre, 2026  
+**Repositorio Oficial:** [github.com/Spyker1/turing-gcp-workspace-challenge](https://github.com/Spyker1/turing-gcp-workspace-challenge)
 
 ---
 
-### 1. Arquitectura de la Solución
+### 1. Resumen de la Solución
+Se diseñó e implementó un pipeline serverless desacoplado y orientado a eventos en Google Cloud Platform (GCP). El sistema extrae metadatos de archivos depositados en Cloud Storage, emite logs estructurados en JSON hacia Cloud Logging y aplica el principio de mínimo privilegio en IAM.
 
-Pipeline serverless desacoplado y orientado a eventos:
+> **Nota de Entorno:** Dado que el proceso se desarrolló en un entorno de pruebas sin cuenta de facturación corporativa asignada, la solución se estructuró bajo el paradigma de **Infraestructura como Código (IaC)** reproducible (`setup_infrastructure.sh`) y la lógica de negocio fue validada al 100% mediante emulación local con la suite de pruebas unitarias (`unittest`).
+
+---
+
+### 2. Diagrama de Arquitectura
 
 ```text
 [Productor / Ingestor]
@@ -16,15 +22,15 @@ Pipeline serverless desacoplado y orientado a eventos:
           ▼
 [Cloud Storage Bucket: gs://turing-storage-data]
    ├── Reglas de Ciclo de Vida: Nearline (30d) -> Coldline (90d) -> Delete (365d)
-   └── Acceso: Uniform Bucket-Level Access (UBLA) + IAM Mínimo Privilegio
+   └── Seguridad: Uniform Bucket-Level Access (UBLA) + IAM Mínimo Privilegio
           │
-          ▼ (Evento GCS: google.cloud.storage.object.v1.finalized)
+          ▼ Evento GCS: google.cloud.storage.object.v1.finalized
 [Eventarc / Trigger]
           │
-          ▼ CloudEvent (JSON)
+          ▼ CloudEvent Payload (JSON)
 [Cloud Function Gen 2: gcs-metadata-extractor (Python 3.11)]
    ├── Service Account: sa-storage-processor (roles/logging.logWriter, roles/storage.objectViewer)
-   ├── Extracción y validación: bucket, name, size (B, KB, MB), contentType, md5, timestamps
+   ├── Extracción: bucket, name, size (Bytes/KB/MB), contentType, md5, timestamps
    └── Manejo robusto de errores y fallbacks seguros
           │
           ▼ JSON Structured Payload
