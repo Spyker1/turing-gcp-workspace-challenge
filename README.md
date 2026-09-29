@@ -41,6 +41,8 @@ Se diseñó e implementó un pipeline serverless desacoplado y orientado a event
 
 ---
 
+![Cloud Function y Activador Eventarc](gcp_function.png)
+
 ## 3. Matriz de Seguridad y Mínimo Privilegio (IAM)
 
 | Identidad | Rol IAM Asignado | Justificación de Seguridad |
@@ -61,6 +63,8 @@ Se diseñó e implementó un pipeline serverless desacoplado y orientado a event
 
 ---
 
+![Reglas de Ciclo de Vida en Cloud Storage](gcp_lifecycle.png)
+
 ## 5. Validación Local y Pruebas Unitarias
 
 Para ejecutar la suite de pruebas automatizadas:
@@ -72,6 +76,7 @@ python -m unittest -v test_main
 **Resultado:** Cobertura de flujos exitosos, ausencia de campos obligatorios y emisión de logs JSON.
 
 ![Evidencia de Pruebas Unitarias](tests_evidence.png)
+![Registro en Cloud Logging](gcp_logs.png)
 
 ---
 
