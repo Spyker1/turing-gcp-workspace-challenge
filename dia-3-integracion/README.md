@@ -60,15 +60,15 @@
 
 ### A. Ingesta Automática en Google Sheets (`Ingesta_GCP`)
 
-![Ingesta en Google Sheets](evidencias/sheets_ingesta.png)
+![Ingesta en Google Sheets](img/sheets_ingesta.png)
 
 ### B. Registro en Cloud Logging (Ejecución Exitosa POST 200)
 
-![Cloud Logging](evidencias/cloud_logging.png)
+![Cloud Logging](img/cloud_logging.png)
 
 ### C. Notificación Recibida en Gmail
 
-![Notificación en Gmail](evidencias/gmail_notificacion.png)
+![Notificación en Gmail](img/gmail_notificacion.png)
 
 ---
 
