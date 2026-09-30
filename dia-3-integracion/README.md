@@ -68,7 +68,7 @@
 
 ### C. Notificación Recibida en Gmail
 
-![Notificación en Gmail](img/gmail_notificacion.png)
+![Notificación en Gmail](img/gmail_notification.png)
 
 ---
 
